@@ -8,11 +8,11 @@ Use the legally reusable parts of PixelOS/AOSP Launcher3 as the technical founda
 
 ## Status
 
-**Current stage: Phase 0 — source and dependency audit.**
+**Current stage: Phase 1 — first standalone Android application foundation added; CI build verification pending.**
 
 The PixelOS manifest selects AOSP tag `android-17.0.0_r1` as its default baseline and references AOSP Launcher3. The AOSP build defines both a non-Quickstep `Launcher3` target and a platform/privileged `Launcher3QuickStep` target. The first is the practical starting point for a standalone APK; the second cannot be used unchanged as an ordinary app.
 
-The repository currently contains audit and product-planning documentation. It does not yet contain an Android Gradle application module, and no standalone APK has been built.
+The repository now contains an initial Android Gradle application module and a GitHub Actions debug-APK workflow. The first foundation build exposes installed launchable apps, preserves their original app-provided icons, and launches selected apps. This is an initial functional scaffold only: workspace persistence, automatic iOS-style Dock, the iOS-inspired home layout, app-library design, and real widget hosting remain to be implemented. An APK is not considered available until the CI run succeeds and its artifact is verified.
 
 ## Product requirements and engineering plan
 
