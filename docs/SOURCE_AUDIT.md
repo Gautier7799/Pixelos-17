@@ -1,56 +1,69 @@
 # Source and Licensing Audit
 
-## Project target
+## Target
 
-Build an independently installable Android launcher APK for the Pixel 8 running Android 17. The deliverable is an ordinary user-installed application, not a replacement system image, privileged system package, or modified ROM.
+Build a normal installable HOME APK for Pixel 8 / Android 17 (API 37). It must not require root, an unlocked bootloader, privileged installation, a custom ROM, or modifications to SystemUI/framework.
 
-## Confirmed PixelOS source selection
+## Android 17 baseline
 
-- PixelOS Android 17 manifest: https://github.com/PixelOS-AOSP/android_manifest/tree/seventeen
-- Its default manifest revision is `refs/tags/android-17.0.0_r1`.
-- The manifest declares AOSP as its default remote and points the Launcher3 project to `platform/packages/apps/Launcher3` (manifest path `packages/apps/Launcher3`).
-- Exact upstream Launcher3 build definition at that tag: https://android.googlesource.com/platform/packages/apps/Launcher3/+/refs/tags/android-17.0.0_r1/Android.bp
-- PixelOS also lists a separate vendor project at `vendor/pixel/launcher`: https://gitlab.com/PixelOS-AOSP/proprietary_vendor_pixel_launcher
+PixelOS Android 17 manifest branch `seventeen` selects AOSP tag `android-17.0.0_r1` and references AOSP Launcher3 at `packages/apps/Launcher3`.
 
-This establishes the intended AOSP source tag for the initial audit. It does not prove that Pixel-exclusive vendor code is open or redistributable.
+The Android 17 AOSP `Launcher3` target is the compatibility baseline to investigate. The separate `Launcher3QuickStep` target depends on platform/privileged integration and cannot be copied unchanged into a user-installed APK. Its system-dependent features must be isolated and treated separately.
 
-## Important findings from Android.bp
+## Newly supplied PixelOS/AOSPA source
 
-The Android 17 AOSP build defines separate products:
+Repository: https://github.com/PixelOS-AOSP/packages_apps_Launcher3  
+Inspected branch: `thirteen`  
+Repository status: archived  
+Build system: legacy Gradle / Android Gradle Plugin 3.5.1  
+Declared compile SDK: `android-S`  
+Build tools: `28.0.3`  
+Manifest target SDK: `33`  
+Manifest package: `com.android.launcher3`
 
-1. `Launcher3`: built with `sdk_version: "current"`, `min_sdk_version: 31`, and `target_sdk_version: "current"`. This is the more realistic candidate for a third-party APK port.
-2. `Launcher3QuickStep`: explicitly sets `platform_apis: true`, `privileged: true`, and `system_ext_specific: true`; it also requires privileged whitelist configuration and system-side resources. This target cannot be copied unchanged into a normal Play-installable/user-installed APK.
-3. The common `Launcher3ResLib` dependency graph includes AndroidX libraries but also platform-tree libraries such as SystemUI shared components, animation/contextual education libraries, and other AOSP build targets. These must be individually evaluated; they are not automatically available as Maven dependencies or public SDK APIs.
+### What is useful
 
-The practical strategy is therefore **not** to try to package the complete Quickstep target as an ordinary APK. Start from the non-Quickstep Launcher3 target, then remove or replace unavailable dependencies and integrations in a controlled way. Gesture navigation/Recents integration, overview transitions, taskbar, and other system-coupled behavior must be treated as separate capability work, not assumed to work merely because the launcher installs.
+- Real Launcher3 source, resources, tests, protos, plugins, and icon-loader code.
+- AOSPA launcher extension class `co.aospa.launcher.ParanoidLauncher`, which subclasses `com.android.launcher3.Launcher`.
+- Explicit `withQuickstep` and `withoutQuickstep` product flavors.
+- The non-Quickstep source-set split is a useful reference for identifying the boundary between launcher UI and recents/system integration.
+- AOSPA-specific source directories such as `src_base`, `src_shortcuts_overrides`, and `src_ui_overrides` are candidates for a later file-by-file comparison against Android 17.
 
-## Initial technical assessment
+### Why this fork cannot be used unchanged
 
-- Launcher3 is the open-source foundation to audit and port.
-- Pixel-exclusive vendor components must be assessed separately. Do not copy proprietary APKs, resources, overlays, or binaries into this repository unless their licensing and redistribution rights are verified.
-- Classify dependencies as:
-  - Public Android SDK
-  - AndroidX / other redistributable libraries
-  - AOSP libraries requiring source porting or adaptation
-  - Platform-only or hidden APIs
-  - Privileged/system integration
-  - Proprietary or licensing-restricted assets
-- Replace or disable unsupported integrations only after identifying their call sites and user-visible impact. Preserve upstream launcher behavior wherever feasible.
+1. It is an archived legacy branch, not an Android 17 source snapshot.
+2. Its Gradle configuration uses AGP 3.5.1, Build Tools 28.0.3, and `android-S`; its manifest targets API 33. These are not a compatible ready-made toolchain for the Android 17/API 37 project.
+3. Its `withoutQuickstep` flavor is not proof of a self-contained ordinary APK. It still has a special `withoutQuickstepImplementation` dependency on `plugin_core.jar`, a project dependency on `IconLoader`, generated protobuf code, and AOSP-oriented repository/prebuilt paths.
+4. The shared manifest contains platform-oriented permissions and signature/system permission declarations. Each permission and component must be audited for a normal app; simply merging the manifest is unsafe and may create install/runtime failures.
+5. Its Soong `Android.bp` declares the Launcher3 app as `privileged: true` and `system_ext_specific: true`, with required privileged whitelist files. That Soong target is a system app configuration, not the desired distribution model.
+6. The Android.bp dependency graph includes AOSP libraries and platform build targets that are not automatically available through Maven or the public Android SDK.
 
-## Repository license warning
+### Architectural conclusion
 
-This repository currently contains an MIT license for this repository's own original contributions. That license does not relicense AOSP, PixelOS, Google, or third-party source code imported later. The AOSP Launcher3 build definition identifies its default applicable license as Apache-2.0. Every imported component must retain its applicable copyright and license notices, and compatibility must be checked before distribution.
+Use Android 17 AOSP Launcher3 as the API and platform compatibility baseline. Treat the archived PixelOS/AOSPA fork as a change reference only. Compare its AOSPA-specific commits/files with Android 17 and port only changes that are still applicable, license-compatible, and independent of unavailable platform APIs.
 
-## Audit status
+Do not import the entire old fork, its manifests, or its build files wholesale. Do not copy proprietary Pixel Launcher binaries/assets.
 
-- [x] Confirmed PixelOS manifest default AOSP tag: `android-17.0.0_r1`.
-- [x] Confirmed manifest reference to AOSP Launcher3.
-- [x] Confirmed separate PixelOS vendor launcher project.
-- [x] Compared the AOSP `Launcher3` and `Launcher3QuickStep` build targets.
-- [x] Identified platform/privileged integration as a major barrier for QuickStep parity in a normal APK.
-- [ ] Inspect Launcher3 manifest, source sets, resources, overlays, and exact dependency graph.
-- [ ] Produce a file-by-file porting and licensing decision before importing source.
+## Current repository assessment
 
-## Current build status
+The current `Gautier7799/Pixelos-17` app is a small hand-written Java UI prototype. The latest commit `52d4001` adds a simple home page, app grid, and dock. It is not derived from Launcher3 and does not implement Launcher3 workspace or widget-host architecture. Workflow run #20 succeeded, but that success only verifies the prototype build.
 
-No standalone Gradle project or APK has been created or built yet. GitHub write access has been verified; that is not a build test.
+The prototype is frozen and must not be used as the technical foundation. Keep it only as historical reference until a real Launcher3 baseline builds.
+
+## Licensing
+
+The user's repository MIT license applies only to original contributions. It does not relicense upstream AOSP or PixelOS/AOSPA code. The AOSP Launcher3 build declares Apache-2.0 as its default applicable license; imported files must preserve their copyright/license notices. The exact license and notice files in each upstream snapshot must be captured before source import. No proprietary Google/Pixel assets or binaries may be bundled without explicit redistribution rights.
+
+## Audit gates
+
+- [x] Confirm PixelOS Android 17 manifest baseline and AOSP Launcher3 reference.
+- [x] Inspect legacy PixelOS/AOSPA fork Gradle flavors and key build properties.
+- [x] Inspect legacy fork manifest and Soong system-app declarations.
+- [x] Identify why legacy `withoutQuickstep` is not a drop-in standalone build.
+- [ ] Capture exact Android 17 AOSP Launcher3 source snapshot and license notices.
+- [ ] Generate file-level diff of AOSPA custom source against Android 17 Launcher3.
+- [ ] Produce dependency matrix: keep / replace / port / exclude.
+- [ ] Verify standalone manifest and app identity.
+- [ ] Build the minimal real Launcher3 APK before UI customization.
+
+No new APK build is approved until the remaining gates are completed.
