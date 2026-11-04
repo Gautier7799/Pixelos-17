@@ -10,7 +10,9 @@ Use the legally reusable parts of PixelOS/AOSP Launcher3 as the technical founda
 
 **Current stage: Phase 0 — source and dependency audit.**
 
-No standalone APK has been built yet. The PixelOS manifest references AOSP Launcher3 and a separate proprietary Pixel launcher vendor project; these sources must be audited independently before importing code or assets.
+The PixelOS manifest selects AOSP tag `android-17.0.0_r1` as its default baseline and references AOSP Launcher3. The AOSP build defines both a non-Quickstep `Launcher3` target and a platform/privileged `Launcher3QuickStep` target. The first is the practical starting point for a standalone APK; the second cannot be used unchanged as an ordinary app.
+
+No standalone Gradle project or APK has been built yet.
 
 ## Plan and technical constraints
 
@@ -20,9 +22,10 @@ No standalone APK has been built yet. The PixelOS manifest references AOSP Launc
 ## Upstream references
 
 - [PixelOS Android 17 manifest](https://github.com/PixelOS-AOSP/android_manifest/tree/seventeen)
-- [AOSP Launcher3](https://android.googlesource.com/platform/packages/apps/Launcher3/)
-- [PixelOS proprietary vendor launcher](https://gitlab.com/PixelOS-AOSP/proprietary_vendor_pixel_launcher)
+- [AOSP Launcher3 Android.bp at android-17.0.0_r1](https://android.googlesource.com/platform/packages/apps/Launcher3/+/refs/tags/android-17.0.0_r1/Android.bp)
+- [AOSP Launcher3 source](https://android.googlesource.com/platform/packages/apps/Launcher3/)
+- [PixelOS vendor launcher project](https://gitlab.com/PixelOS-AOSP/proprietary_vendor_pixel_launcher)
 
 ## Licensing
 
-The MIT license in this repository applies to original project contributions only. It does not grant rights to redistribute upstream AOSP, PixelOS, Google, or third-party components. Imported files must retain their original notices and satisfy their respective licenses.
+The MIT license in this repository applies to original project contributions only. It does not grant rights to redistribute upstream AOSP, PixelOS, Google, or third-party components. The AOSP Launcher3 build declares Apache-2.0 as its applicable license; imported files must retain their original notices and satisfy their respective licenses.
