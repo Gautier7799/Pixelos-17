@@ -40,3 +40,8 @@ The MIT license in this repository applies to original project contributions onl
 ## CI build status
 
 The first Android 17 CI attempts failed during Android SDK setup because the workflow requested the obsolete `tools` SDK package. The workflow has been corrected to install `platform-tools` only before installing the Android 37 platform and build tools. A subsequent run must complete successfully before an APK artifact is considered available.
+
+
+## Build pipeline correction
+
+The Android setup action was removed because its default bootstrap attempted to install the obsolete SDK package `tools`. The workflow now locates the runner-provided `sdkmanager`, accepts licenses, installs Android platform 36/build-tools 36 directly, verifies the SDK paths, and then runs `assembleDebug`. This change isolates SDK provisioning from the deprecated setup action.
