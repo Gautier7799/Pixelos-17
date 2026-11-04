@@ -10,7 +10,7 @@ The application remains a normal APK. It must not require root, an unlocked boot
 
 1. Reliability before feature count.
 2. Native Android behavior before visual imitation.
-3. Pixel-inspired interaction and visual language, implemented from auditable sources or original code.
+3. iOS-inspired visual design and interaction where explicitly specified below, implemented with original code and legally usable resources.
 4. Fast cold start, responsive touch, smooth scrolling and transitions, and controlled memory/battery use.
 5. User data and workspace state must survive process death and app upgrades.
 6. Every setting must work, persist, and have a clear effect.
@@ -23,6 +23,47 @@ The application remains a normal APK. It must not require root, an unlocked boot
 - Primary platform: Android 17 / API 37.
 - Delivery: signed, installable APK registered as a HOME candidate.
 - Initial form factor: handheld phone; tablet/foldable adaptation is not a Phase 1 requirement.
+
+## Required design direction — iOS-inspired experience
+
+The following five areas are explicit product requirements, not optional visual experiments. The target is an original Android implementation inspired by iOS interaction patterns and visual proportions; it is not an attempt to copy or redistribute Apple's code, private assets, or system software.
+
+### 1. iOS-style automatic Dock
+
+- Implement a polished floating/capsule dock with iOS-inspired proportions, shape, spacing, depth, and animation.
+- Dock geometry must adapt automatically to screen width, display density, system insets, orientation, and the number of dock icons.
+- The dock must work out of the box without requiring the user to tune width, height, margins, or capsule bounds manually.
+- Preserve normal launcher customization for dock contents and any appropriate appearance controls; manual tuning must not be required for correct layout.
+- Handle gesture-navigation insets, edge-to-edge layout, and keyboard/IME visibility correctly.
+- Test one through the maximum supported dock item count, including small and large display configurations.
+
+### 2. iOS-inspired App Drawer
+
+- Create an app library/drawer with iOS-inspired visual organization, typography, spacing, search presentation, and app discovery patterns.
+- Keep Android app discovery, launch intents, work-profile boundaries, and package visibility behavior correct.
+- Search must be fast, predictable, keyboard-friendly, and usable with large app collections.
+- Any category/grouping behavior must be understandable and must not silently move or hide apps.
+
+### 3. iOS-inspired Widgets
+
+- Provide an iOS-inspired widget surface with coherent card sizes, corner radii, spacing, and layout.
+- Host real Android app widgets through supported AppWidget APIs wherever the platform permits; do not replace live widgets with static mockups.
+- Support adding, removing, resizing, configuration, and lifecycle callbacks where supported by the widget provider and Android version.
+- Clearly distinguish launcher-owned information cards from actual third-party Android widgets.
+
+### 4. iOS-inspired Home Screen
+
+- Build a home screen with iOS-inspired icon grid, visual rhythm, page behavior, dock integration, folders, widget placement, and transitions.
+- Preserve Android launcher fundamentals: app shortcuts, long-press actions, drag and drop, folders, widgets, accessibility, and persistent workspace state.
+- Provide sensible default layout and automatic spacing for Pixel 8; users should not need manual layout correction after installation.
+- Keep icon labels, adaptive icons, themed icons, and wallpaper-aware appearance coherent.
+
+### 5. iOS-inspired Lock Screen
+
+- Design an optional lock-screen companion/experience inspired by iOS, subject to Android public API and security restrictions.
+- A normal third-party launcher APK cannot replace or own Android's secure Keyguard/lock screen, authenticate the user, or guarantee system-level lock-screen behavior.
+- Do not draw an imitation lock screen over the real secure lock screen or interfere with authentication, emergency access, notifications, or device security.
+- Any companion surface must be opt-in, use supported APIs, and clearly document what it can and cannot control. Full replacement requires OS/OEM-level integration and is outside the standalone APK scope.
 
 ## Feature scope and delivery order
 
@@ -40,18 +81,18 @@ The application remains a normal APK. It must not require root, an unlocked boot
 - Configuration/state migration and recovery from malformed or stale workspace records.
 - Crash-free core navigation and no destructive behavior during upgrades.
 
-### P1 — Pixel experience refinement
+### P1 — iOS-inspired design implementation
 
-- Pixel-inspired grid, icon sizing, spacing, typography, dock and folder geometry.
+- Implement the automatic iOS-style Dock, iOS-inspired Home Screen, App Drawer, and widget presentation described above.
+- Pixel 8-specific grid, icon sizing, spacing, insets, and density calibration.
 - Adaptive icon rendering and themed icon support where the platform and installed icon packs permit.
-- App drawer search UX and useful local results.
 - Recent/suggested apps only where reliable data is available through supported APIs.
 - Gesture affordances that can be implemented by an ordinary launcher without claiming privileged navigation ownership.
 - Responsive animations with reduced-motion/accessibility handling.
-- Per-device density and inset calibration for Pixel 8.
 
-### P2 — Optional enhancements
+### P2 — Optional enhancements and lock-screen companion
 
+- Evaluate an opt-in lock-screen companion only within supported Android APIs and without replacing or overlaying the secure Keyguard.
 - At-a-glance style information only through supported, permissioned providers or user-configured widgets.
 - Additional customization, backup/restore, and optional integrations after the baseline is stable.
 - Any AI/search provider integration must be optional, transparent, privacy-conscious, and isolated from core launcher operation.
@@ -60,16 +101,19 @@ The application remains a normal APK. It must not require root, an unlocked boot
 
 A normal third-party launcher cannot assume access to privileged/platform APIs or the system's private Quickstep/Recents integration. Full system overview replacement, privileged gesture-navigation transitions, protected task management, and other OEM-only capabilities must be treated as unavailable unless proven through public APIs on the target build.
 
-Do not package the Pixel Launcher APK, proprietary Google code, private assets, or vendor binaries as a shortcut. Use the APK as a behavioral/resource inventory only. Every imported source file must have a verified license and retain its notices.
+Android's secure lock screen is owned by the operating system. A standalone HOME app can provide a companion experience but cannot safely or legitimately replace Keyguard or control secure authentication. This limitation must remain explicit in product claims.
+
+Do not package the Pixel Launcher APK, proprietary Google code, private assets, or vendor binaries as a shortcut. Use reference APKs for behavioral/resource analysis only. Likewise, do not copy Apple's proprietary code or assets. Every imported source file/resource must have verified redistribution rights and retain its original notices.
 
 ## Architecture requirements
 
 - Keep the Android application module separate from source-audit notes and upstream reference material.
 - Port the non-Quickstep Launcher3 surface first; isolate platform-only dependencies behind adapters or replace them with public SDK implementations.
-- Keep workspace persistence, app discovery, rendering, search, and platform integration as separable components.
+- Keep workspace persistence, app discovery, rendering, search, widgets, and platform integration as separable components.
+- Derive dock geometry from runtime display metrics, insets, orientation, and item count; avoid hard-coded Pixel 8-only pixel dimensions.
 - Avoid reflection/hidden APIs as a foundation for core behavior.
 - Use deterministic Gradle builds and pinned toolchain/dependency versions.
-- Add unit tests for persistence, grid placement, package/app model mapping, and migration logic.
+- Add unit tests for persistence, grid placement, dock geometry, package/app model mapping, and migration logic.
 - Add instrumentation tests for HOME launch, workspace restoration, app drawer, folders, widget lifecycle, and rotation/configuration changes.
 - Keep a known-good baseline and use small, reviewable commits.
 
@@ -80,11 +124,13 @@ A build is not a release candidate until all applicable gates pass:
 1. Clean checkout builds reproducibly in CI.
 2. APK installs and updates on Pixel 8 / Android 17 without privileged permissions.
 3. Launcher can be selected as default HOME and remains selected after process/device restart.
-4. Workspace, dock, folders, and app drawer remain correct after force-stop and reboot.
+4. Workspace, automatic dock geometry, folders, and app drawer remain correct after force-stop and reboot.
 5. App launch, search, folder operations, and widget lifecycle pass functional tests.
-6. No crash, ANR, data loss, or major layout defect in the core test path.
-7. Performance is measured on-device; animation smoothness is not inferred from source inspection.
-8. License, notices, signing, versioning, and known limitations are documented.
+6. Dock adapts correctly to different item counts, insets, and orientation without manual correction.
+7. No crash, ANR, data loss, or major layout defect in the core test path.
+8. Performance is measured on-device; animation smoothness is not inferred from source inspection.
+9. Lock-screen companion claims, if any, are tested against Android security boundaries and never imply Keyguard replacement.
+10. License, notices, signing, versioning, and known limitations are documented.
 
 ## Current status
 
