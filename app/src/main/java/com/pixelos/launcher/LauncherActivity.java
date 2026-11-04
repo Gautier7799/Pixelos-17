@@ -35,14 +35,6 @@ public final class LauncherActivity extends Activity {
         renderLauncher();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (getWindow().getDecorView().getChildCount() == 0) {
-            renderLauncher();
-        }
-    }
-
     private void renderLauncher() {
         ScrollView scroll = new ScrollView(this);
         scroll.setFillViewport(true);
