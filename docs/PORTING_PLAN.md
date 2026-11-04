@@ -2,48 +2,61 @@
 
 ## Objective
 
-Create a maintainable, independently installable launcher APK based on the legally usable parts of PixelOS/AOSP Launcher3, targeting Pixel 8 / Android 17. Keep this project separate from Lawnchair and all NothingOS/Caddy work.
+Deliver a stable, independently installable Android 17 launcher APK for Pixel 8, based on real AOSP Launcher3 code with selectively ported PixelOS/AOSPA changes. Keep this project separate from Lawnchair and NothingOS/Caddy.
 
-## Phase 0 — Source and dependency audit
+## Phase 0 — Correct the source foundation
 
-1. Use the PixelOS manifest's AOSP baseline tag, `android-17.0.0_r1`, for the initial source audit.
-2. Inspect Launcher3's manifest, Android.bp, source sets, resources, overlays, and dependency graph.
-3. Prioritize the non-Quickstep `Launcher3` target. Do not attempt to package the privileged/platform-API `Launcher3QuickStep` target unchanged.
-4. Map dependencies into public SDK, AndroidX/redistributable, AOSP library requiring adaptation, platform-only/hidden API, privileged/system, and proprietary categories.
-5. Verify licenses and notices for every source/resource intended for import.
-6. Produce a concrete porting matrix: keep, adapt, replace, or exclude.
+1. Freeze the current hand-written UI prototype. Do not extend it as if it were Launcher3.
+2. Pin the Android 17 AOSP Launcher3 source at PixelOS manifest baseline `android-17.0.0_r1`.
+3. Capture source revision, copyright notices, license files, and all required generated/source dependencies.
+4. Inspect Launcher3's manifest, Android.bp, source sets, resources, overlays, and dependency graph.
+5. Compare the archived PixelOS/AOSPA `thirteen` fork against Android 17. Identify AOSPA-specific changes and map them to current files.
+6. Classify every dependency: public SDK, AndroidX/Maven, AOSP source library, hidden/platform API, privileged/system integration, or proprietary.
+7. Build a dependency replacement matrix and define the ordinary-app manifest/package strategy.
 
-**Exit criteria:** a reviewed source snapshot and dependency/licensing matrix. No speculative source copy.
+**Exit criteria:** pinned Android 17 source, reproducible source comparison, license inventory, and a reviewed keep/port/replace/exclude matrix.
 
-## Phase 1 — Standalone baseline APK
+## Phase 1 — Minimal real Launcher3 APK
 
-1. Create a minimal Gradle Android application structure with a stable application ID and toolchain selected from the audited source requirements.
-2. Port the smallest viable non-Quickstep Launcher3 surface and resources.
-3. Add the standard HOME intent filter and launcher activity.
-4. Replace unsupported platform integrations with public-SDK equivalents where possible.
-5. Build a debug APK and run static/build checks.
-6. Install and test on Pixel 8 / Android 17: first launch, HOME selection, app list, app launch, shortcuts where supported, rotation, process restart, and crash-free navigation.
+1. Integrate the minimum Android 17 Launcher3 source and resources into the Gradle build.
+2. Resolve dependencies deliberately; do not silently stub core workspace behavior.
+3. Remove or replace platform-only components only after tracing their call sites and impact.
+4. Provide a normal HOME activity and user-installable package identity.
+5. Implement supported app discovery, workspace, app launch, and persistence.
+6. Build and verify a debug APK in CI.
+7. Test install, HOME selection, cold start, app launch, app list, shortcuts, rotation, process death/restart, and crash-free navigation on Pixel 8 / Android 17.
 
-**Exit criteria:** reproducible debug APK that installs and works as a normal launcher without root or bootloader changes.
+**Exit criteria:** reproducible APK built from real Launcher3 code, installable as a normal app, with the baseline launcher functions working.
 
-## Phase 2 — Pixel experience parity
+## Phase 2 — Approved visual/product features
 
-1. Add only features whose source and licensing are verified.
-2. Evaluate Quickstep-dependent features separately. Recents/overview integration, gesture navigation transitions, taskbar, and other privileged/system interactions may require OS integration and may not be reproducible in an ordinary APK.
-3. Reimplement unavailable integrations through supported Android APIs where feasible.
-4. Document features that inherently require privileged/system integration and therefore cannot be reproduced in an ordinary APK.
-5. Compare behavior and performance against the baseline and maintain regression tests.
+Only after Phase 1 is stable:
 
-## Phase 3 — Release hardening
+- iOS-inspired Home Screen.
+- Fully automatic iOS-style Dock; no manual geometry tuning required.
+- iOS-inspired App Drawer.
+- iOS-inspired widget surface using real Android AppWidget hosting and lifecycle APIs.
+- Preserve original application icon artwork unchanged at every surface.
+- Keep launcher settings functional and persistent.
 
-1. Verify notices, licenses, package identity, signing, and versioning.
-2. Test clean install, upgrade, default launcher switching, backup/restore behavior where applicable, and uninstall.
-3. Produce a release APK and a concise known-limitations document.
+The Lock Screen is explicitly out of scope and must not be implemented.
 
-## Engineering rules
+## Phase 3 — PixelOS/AOSPA feature port
 
-- Keep changes isolated and reviewable; do not modify unrelated behavior without an explicit project decision.
-- Do not claim Pixel Launcher parity until each feature is implemented and tested.
-- Do not bundle proprietary Google/Pixel assets or binaries without verified redistribution rights.
-- Never treat a successful source commit as evidence that the Android project builds.
-- Preserve a known-good baseline and record each build/test result.
+1. Port only AOSPA changes verified to remain applicable to Android 17.
+2. Treat Quickstep, Recents, overview transitions, taskbar, and other system-coupled features as a separate capability audit.
+3. Reimplement only what public Android APIs support in a normal APK.
+4. Document features that inherently require privileged/system integration; do not simulate them deceptively.
+
+## Phase 4 — Release hardening
+
+Verify licenses/notices, package identity, signing, versioning, clean install/upgrade, default launcher switching, workspace backup/restore where supported, performance, and uninstall.
+
+## Engineering controls
+
+- Keep a known-good baseline and isolated commits.
+- Do not run builds for documentation-only or speculative UI changes.
+- No APK build until the source/dependency/manifest gates pass.
+- A successful CI run is not sufficient: verify the artifact is built from the intended Launcher3 source.
+- Never claim a feature is implemented until code and device behavior confirm it.
+- Do not change the locked icon requirement or revive the rejected Lock Screen scope.
