@@ -26,7 +26,7 @@ The application remains a normal APK. It must not require root, an unlocked boot
 
 ## Required design direction — iOS-inspired experience
 
-The following five areas are explicit product requirements, not optional visual experiments. The target is an original Android implementation inspired by iOS interaction patterns and visual proportions; it is not an attempt to copy or redistribute Apple's code, private assets, or system software.
+The four areas below are explicit product requirements. The target is an original Android implementation inspired by iOS interaction patterns and visual proportions; it is not an attempt to copy or redistribute Apple's code, private assets, or system software.
 
 ### 1. iOS-style automatic Dock
 
@@ -58,12 +58,10 @@ The following five areas are explicit product requirements, not optional visual 
 - Provide sensible default layout and automatic spacing for Pixel 8; users should not need manual layout correction after installation.
 - Keep icon labels, adaptive icons, themed icons, and wallpaper-aware appearance coherent.
 
-### 5. iOS-inspired Lock Screen
+## Explicitly excluded
 
-- Design an optional lock-screen companion/experience inspired by iOS, subject to Android public API and security restrictions.
-- A normal third-party launcher APK cannot replace or own Android's secure Keyguard/lock screen, authenticate the user, or guarantee system-level lock-screen behavior.
-- Do not draw an imitation lock screen over the real secure lock screen or interfere with authentication, emergency access, notifications, or device security.
-- Any companion surface must be opt-in, use supported APIs, and clearly document what it can and cannot control. Full replacement requires OS/OEM-level integration and is outside the standalone APK scope.
+- Lock Screen development is rejected and out of scope. Do not design, implement, simulate, overlay, or add a lock-screen companion to this project.
+- The Android secure lock screen and Keyguard remain entirely under the operating system's control and are not to be modified by this launcher.
 
 ## Feature scope and delivery order
 
@@ -90,9 +88,8 @@ The following five areas are explicit product requirements, not optional visual 
 - Gesture affordances that can be implemented by an ordinary launcher without claiming privileged navigation ownership.
 - Responsive animations with reduced-motion/accessibility handling.
 
-### P2 — Optional enhancements and lock-screen companion
+### P2 — Optional enhancements
 
-- Evaluate an opt-in lock-screen companion only within supported Android APIs and without replacing or overlaying the secure Keyguard.
 - At-a-glance style information only through supported, permissioned providers or user-configured widgets.
 - Additional customization, backup/restore, and optional integrations after the baseline is stable.
 - Any AI/search provider integration must be optional, transparent, privacy-conscious, and isolated from core launcher operation.
@@ -100,8 +97,6 @@ The following five areas are explicit product requirements, not optional visual 
 ## Explicit platform boundary
 
 A normal third-party launcher cannot assume access to privileged/platform APIs or the system's private Quickstep/Recents integration. Full system overview replacement, privileged gesture-navigation transitions, protected task management, and other OEM-only capabilities must be treated as unavailable unless proven through public APIs on the target build.
-
-Android's secure lock screen is owned by the operating system. A standalone HOME app can provide a companion experience but cannot safely or legitimately replace Keyguard or control secure authentication. This limitation must remain explicit in product claims.
 
 Do not package the Pixel Launcher APK, proprietary Google code, private assets, or vendor binaries as a shortcut. Use reference APKs for behavioral/resource analysis only. Likewise, do not copy Apple's proprietary code or assets. Every imported source file/resource must have verified redistribution rights and retain its original notices.
 
@@ -129,8 +124,7 @@ A build is not a release candidate until all applicable gates pass:
 6. Dock adapts correctly to different item counts, insets, and orientation without manual correction.
 7. No crash, ANR, data loss, or major layout defect in the core test path.
 8. Performance is measured on-device; animation smoothness is not inferred from source inspection.
-9. Lock-screen companion claims, if any, are tested against Android security boundaries and never imply Keyguard replacement.
-10. License, notices, signing, versioning, and known limitations are documented.
+9. License, notices, signing, versioning, and known limitations are documented.
 
 ## Current status
 
