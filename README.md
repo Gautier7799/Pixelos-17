@@ -1,47 +1,38 @@
 # PixelOS 17 Standalone Launcher
 
-An independent Android launcher project targeting Pixel 8 / Android 17, with the goal of becoming a reliable daily-use HOME app.
+An independent Android launcher APK for Pixel 8 / Android 17. The project is intended to become a reliable daily-use HOME app without root, an unlocked bootloader, or ROM/framework modification.
 
-## Project direction
+## Current engineering status
 
-Use the legally reusable parts of PixelOS/AOSP Launcher3 as the technical foundation, then adapt them into a normal installable APK. This is not a ROM port and does not require root, an unlocked bootloader, or modification of SystemUI/framework.
+**The current APK is a UI prototype, not a Launcher3 port.** The successful workflow run #20 only proves that the small Java prototype compiles. It does not provide the Launcher3 workspace, app drawer architecture, widget hosting, workspace persistence, or PixelOS/AOSP launcher behavior. Do not treat that APK as a project milestone or daily-use candidate.
 
-## Status
+Work is continuing on branch `port/pixelos-launcher3`. The prototype is frozen while the source foundation is corrected. Automatic builds on every push are disabled to avoid spending time and CI resources on an implementation that is being replaced.
 
-**Current stage: Phase 1 — first standalone Android application foundation added; CI build verification pending.**
+## Source decisions
 
-The PixelOS manifest selects AOSP tag `android-17.0.0_r1` as its default baseline and references AOSP Launcher3. The AOSP build defines both a non-Quickstep `Launcher3` target and a platform/privileged `Launcher3QuickStep` target. The first is the practical starting point for a standalone APK; the second cannot be used unchanged as an ordinary app.
+- Android 17 baseline: PixelOS manifest branch `seventeen`, which selects AOSP tag `android-17.0.0_r1` and AOSP Launcher3.
+- PixelOS/AOSPA reference: [PixelOS-AOSP/packages_apps_Launcher3](https://github.com/PixelOS-AOSP/packages_apps_Launcher3), archived legacy branch `thirteen`.
+- The legacy fork is valuable for identifying AOSPA customizations and its non-Quickstep source split, but it is not a current Android 17 Gradle-ready source tree.
+- The intended engineering direction is to use Android 17 AOSP Launcher3 as the compatibility baseline, then selectively port verified and licensed AOSPA/PixelOS changes.
+- The old hand-written `LauncherActivity` prototype is not the product architecture and will not be extended as a substitute for Launcher3.
 
-The repository now contains an initial Android Gradle application module and a GitHub Actions debug-APK workflow. The first foundation build exposes installed launchable apps, preserves their original app-provided icons, and launches selected apps. This is an initial functional scaffold only: workspace persistence, automatic iOS-style Dock, the iOS-inspired home layout, app-library design, and real widget hosting remain to be implemented. An APK is not considered available until the CI run succeeds and its artifact is verified.
-
-## Product requirements and engineering plan
-
-- [Daily-driver product requirements and quality gates](docs/PRODUCT_REQUIREMENTS.md)
+Detailed findings and next gates:
+- [PixelOS fork audit](docs/PIXElOS_FORK_AUDIT.md)
 - [Source and licensing audit](docs/SOURCE_AUDIT.md)
 - [Standalone porting plan](docs/PORTING_PLAN.md)
+- [Product requirements](docs/PRODUCT_REQUIREMENTS.md)
 
-## Upstream references
+## Locked product requirements
 
-- [PixelOS Android 17 manifest](https://github.com/PixelOS-AOSP/android_manifest/tree/seventeen)
-- [AOSP Launcher3 Android.bp at android-17.0.0_r1](https://android.googlesource.com/platform/packages/apps/Launcher3/+/refs/tags/android-17.0.0_r1/Android.bp)
-- [AOSP Launcher3 source](https://android.googlesource.com/platform/packages/apps/Launcher3/)
-- [PixelOS vendor launcher project](https://gitlab.com/PixelOS-AOSP/proprietary_vendor_pixel_launcher)
-
-## Reference APKs
-
-- Legacy Nexus Launcher NMR1-3063178: historical behavior reference only.
-- Pixel Launcher 17-907 (min API 37): modern behavior/resource reference only; not a redistribution or implementation base.
+- iOS-inspired Home Screen, App Drawer, Widgets surface, and fully automatic iOS-style Dock.
+- Original app icon artwork must remain untouched: no recoloring, tinting, monochrome conversion, replacement, or masks that alter its appearance.
+- No Lock Screen work; that proposal was explicitly rejected.
+- Ordinary installable APK only. No privileged/system installation or framework modifications.
 
 ## Licensing
 
-The MIT license in this repository applies to original project contributions only. It does not grant rights to redistribute upstream AOSP, PixelOS, Google, or third-party components. The AOSP Launcher3 build declares Apache-2.0 as its applicable license; imported files must retain their original notices and satisfy their respective licenses.
+The repository MIT license applies only to original project contributions. It does not relicense AOSP, PixelOS/AOSPA, Google, or third-party code and assets. Imported code must retain its original notices and satisfy its own license. Proprietary Pixel Launcher assets or binaries will not be bundled without verified redistribution rights.
 
+## Build policy
 
-## CI build status
-
-The first Android 17 CI attempts failed during Android SDK setup because the workflow requested the obsolete `tools` SDK package. The workflow has been corrected to install `platform-tools` only before installing the Android 37 platform and build tools. A subsequent run must complete successfully before an APK artifact is considered available.
-
-
-## Build pipeline correction
-
-The Android setup action was removed because its default bootstrap attempted to install the obsolete SDK package `tools`. The workflow now locates the runner-provided `sdkmanager`, accepts licenses, installs Android platform 36/build-tools 36 directly, verifies the SDK paths, and then runs `assembleDebug`. This change isolates SDK provisioning from the deprecated setup action.
+No new APK build will be launched until the Launcher3 source snapshot, dependency replacements, manifest strategy, and standalone build path pass the source-port review. A green CI result for the frozen prototype is not considered a successful launcher build.
