@@ -11,11 +11,12 @@ The application remains a normal APK. It must not require root, an unlocked boot
 1. Reliability before feature count.
 2. Native Android behavior before visual imitation.
 3. iOS-inspired visual design and interaction where explicitly specified below, implemented with original code and legally usable resources.
-4. Fast cold start, responsive touch, smooth scrolling and transitions, and controlled memory/battery use.
-5. User data and workspace state must survive process death and app upgrades.
-6. Every setting must work, persist, and have a clear effect.
-7. Unsupported system integrations must be disclosed, not simulated deceptively.
-8. Keep the project independent of Lawnchair and NothingOS/Caddy code.
+4. Preserve original application icon artwork; redesigning or recoloring app icons is explicitly prohibited.
+5. Fast cold start, responsive touch, smooth scrolling and transitions, and controlled memory/battery use.
+6. User data and workspace state must survive process death and app upgrades.
+7. Every setting must work, persist, and have a clear effect.
+8. Unsupported system integrations must be disclosed, not simulated deceptively.
+9. Keep the project independent of Lawnchair and NothingOS/Caddy code.
 
 ## Target device and platform
 
@@ -56,7 +57,15 @@ The four areas below are explicit product requirements. The target is an origina
 - Build a home screen with iOS-inspired icon grid, visual rhythm, page behavior, dock integration, folders, widget placement, and transitions.
 - Preserve Android launcher fundamentals: app shortcuts, long-press actions, drag and drop, folders, widgets, accessibility, and persistent workspace state.
 - Provide sensible default layout and automatic spacing for Pixel 8; users should not need manual layout correction after installation.
-- Keep icon labels, adaptive icons, themed icons, and wallpaper-aware appearance coherent.
+- Display each app's original icon artwork as supplied by its app/provider. Do not redraw, recolor, tint, monochromize, replace, or apply a custom shape/mask that alters the icon artwork.
+- The launcher may adjust icon size and position the untouched original icon within its layout, but must preserve its original colors, logo, proportions, and visual identity.
+
+## Icon design — locked requirement
+
+- Application icons must remain original and unchanged across the Home Screen, Dock, App Drawer, folders, search results, and shortcuts.
+- Do not apply iOS icon redesign, uniform monochrome treatment, dynamic color tinting, custom icon packs, generated replacement icons, or forced masks to third-party app artwork.
+- The iOS-inspired identity applies to the launcher UI, layout, widgets, surfaces, typography, dock container, and animations—not to the artwork of individual app icons.
+- If an app supplies adaptive icon layers, render them using their original supplied assets and supported Android behavior without altering the artwork.
 
 ## Explicitly excluded
 
@@ -69,12 +78,12 @@ The four areas below are explicit product requirements. The target is an origina
 
 - Correct HOME role/intent handling and reliable default-launcher switching.
 - Workspace with persistent app shortcuts, folders, pages, and dock.
-- App discovery from PackageManager, correct launch intents, labels and icons.
+- App discovery from PackageManager, correct launch intents, labels and original icons.
 - App drawer with predictable sorting, scrolling, search filtering, and empty states.
 - Add/remove/move shortcuts without losing workspace state.
 - Folder open/close, rename, add/remove apps, and stable persistence.
 - Widget host support using public Android APIs, including resize and removal where supported.
-- Wallpaper-aware light/dark surfaces and Android dynamic color where public APIs permit.
+- Wallpaper-aware light/dark surfaces and Android dynamic color where public APIs permit, without recoloring app icons.
 - Accessibility: content descriptions, touch targets, keyboard/focus basics, and contrast.
 - Configuration/state migration and recovery from malformed or stale workspace records.
 - Crash-free core navigation and no destructive behavior during upgrades.
@@ -82,8 +91,7 @@ The four areas below are explicit product requirements. The target is an origina
 ### P1 — iOS-inspired design implementation
 
 - Implement the automatic iOS-style Dock, iOS-inspired Home Screen, App Drawer, and widget presentation described above.
-- Pixel 8-specific grid, icon sizing, spacing, insets, and density calibration.
-- Adaptive icon rendering and themed icon support where the platform and installed icon packs permit.
+- Pixel 8-specific grid, icon sizing, spacing, insets, and density calibration while preserving original icon artwork.
 - Recent/suggested apps only where reliable data is available through supported APIs.
 - Gesture affordances that can be implemented by an ordinary launcher without claiming privileged navigation ownership.
 - Responsive animations with reduced-motion/accessibility handling.
@@ -106,6 +114,7 @@ Do not package the Pixel Launcher APK, proprietary Google code, private assets, 
 - Port the non-Quickstep Launcher3 surface first; isolate platform-only dependencies behind adapters or replace them with public SDK implementations.
 - Keep workspace persistence, app discovery, rendering, search, widgets, and platform integration as separable components.
 - Derive dock geometry from runtime display metrics, insets, orientation, and item count; avoid hard-coded Pixel 8-only pixel dimensions.
+- Keep icon retrieval and rendering separate from layout styling so the original app artwork cannot be unintentionally altered by UI themes.
 - Avoid reflection/hidden APIs as a foundation for core behavior.
 - Use deterministic Gradle builds and pinned toolchain/dependency versions.
 - Add unit tests for persistence, grid placement, dock geometry, package/app model mapping, and migration logic.
@@ -122,9 +131,10 @@ A build is not a release candidate until all applicable gates pass:
 4. Workspace, automatic dock geometry, folders, and app drawer remain correct after force-stop and reboot.
 5. App launch, search, folder operations, and widget lifecycle pass functional tests.
 6. Dock adapts correctly to different item counts, insets, and orientation without manual correction.
-7. No crash, ANR, data loss, or major layout defect in the core test path.
-8. Performance is measured on-device; animation smoothness is not inferred from source inspection.
-9. License, notices, signing, versioning, and known limitations are documented.
+7. Original app icons remain visually unchanged in every launcher surface.
+8. No crash, ANR, data loss, or major layout defect in the core test path.
+9. Performance is measured on-device; animation smoothness is not inferred from source inspection.
+10. License, notices, signing, versioning, and known limitations are documented.
 
 ## Current status
 
