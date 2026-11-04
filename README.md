@@ -35,3 +35,8 @@ The repository now contains an initial Android Gradle application module and a G
 ## Licensing
 
 The MIT license in this repository applies to original project contributions only. It does not grant rights to redistribute upstream AOSP, PixelOS, Google, or third-party components. The AOSP Launcher3 build declares Apache-2.0 as its applicable license; imported files must retain their original notices and satisfy their respective licenses.
+
+
+## CI build status
+
+The first Android 17 CI attempts failed during Android SDK setup because the workflow requested the obsolete `tools` SDK package. The workflow has been corrected to install `platform-tools` only before installing the Android 37 platform and build tools. A subsequent run must complete successfully before an APK artifact is considered available.
