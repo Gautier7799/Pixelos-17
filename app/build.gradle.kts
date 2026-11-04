@@ -4,12 +4,12 @@ plugins {
 
 android {
     namespace = "com.pixelos.launcher"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.pixelos.launcher"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
         versionName = "0.1.0-foundation"
     }
